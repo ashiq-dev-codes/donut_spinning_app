@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:donut_spinning_app/app.dart';
+import 'package:flutter/material.dart';
 
 class AppRoot extends StatelessWidget {
   const AppRoot({super.key});
