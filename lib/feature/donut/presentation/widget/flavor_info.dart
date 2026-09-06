@@ -5,9 +5,20 @@ import 'package:donut_spinning_app/feature/donut/presentation/model/donut_flavor
 /// carousel settles on a new page — an approximation, in clean Flutter
 /// terms, of the two-text overlap seen in the Figma recording.
 class FlavorInfo extends StatelessWidget {
-  const FlavorInfo({super.key, required this.flavor});
+  const FlavorInfo({
+    super.key,
+    required this.flavor,
+    required this.activeIndex,
+  });
 
   final DonutFlavor flavor;
+
+  /// The settled carousel index this flavor belongs to. Keying each
+  /// [AnimatedSwitcher]'s child on this (rather than on the flavor's own
+  /// text) is what guarantees the outgoing title/description is fully
+  /// disposed of before the incoming one takes over — no two active
+  /// widgets ever coexist mid-crossfade.
+  final int activeIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +44,7 @@ class FlavorInfo extends StatelessWidget {
               },
               child: Text(
                 flavor.name,
-                key: ValueKey(flavor.name),
+                key: ValueKey(activeIndex),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
@@ -63,7 +74,7 @@ class FlavorInfo extends StatelessWidget {
               },
               child: Text(
                 flavor.description,
-                key: ValueKey(flavor.description),
+                key: ValueKey(activeIndex),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: flavor.accent.withValues(alpha: 0.75),

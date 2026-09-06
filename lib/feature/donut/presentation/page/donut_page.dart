@@ -15,7 +15,7 @@ class DonutScreen extends StatefulWidget {
 }
 
 class _DonutScreenState extends State<DonutScreen> {
-  static const _viewportFraction = 0.46;
+  static const _viewportFraction = 0.55;
 
   final _flavors = DonutFlavor.all;
   late final PageController _pageController = PageController(
@@ -80,26 +80,26 @@ class _DonutScreenState extends State<DonutScreen> {
                       .clamp(200.0, 300.0);
                   return Column(
                     children: [
-                      const SizedBox(height: 8),
+                      // Explicit top clearance in addition to SafeArea, so
+                      // the header clears notches/Dynamic Islands even on
+                      // devices that report a very small top inset.
+                      const SizedBox(height: 16),
                       DodonutLogoHeader(color: palette.accent),
                       Expanded(
-                        child: LayoutBuilder(
-                          builder: (context, carouselConstraints) {
-                            return DonutCarousel(
-                              controller: _pageController,
-                              flavors: _flavors,
-                              centerDonutSize: centerDonutSize,
-                              plateTravelDistance:
-                                  carouselConstraints.maxHeight * 0.85,
-                              onSearchTap: _showFlavorDetail,
-                            );
-                          },
+                        child: DonutCarousel(
+                          controller: _pageController,
+                          flavors: _flavors,
+                          centerDonutSize: centerDonutSize,
+                          onSearchTap: _showFlavorDetail,
                         ),
                       ),
                       Center(
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 440),
-                          child: FlavorInfo(flavor: _flavors[_currentIndex]),
+                          child: FlavorInfo(
+                            flavor: _flavors[_currentIndex],
+                            activeIndex: _currentIndex,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 32),
