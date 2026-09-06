@@ -16,3 +16,20 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 # donut_spinning_app
+
+
+## Archify
+
+This project uses **Archify CLI** for clean architecture scaffolding.
+
+### 🚀 Usage
+
+Run the CLI from the root of your project:
+
+```bash
+# Configure project base folders
+dart run archify configure
+
+# Generate a new feature/module (example: auth)
+dart run archify generate auth
+```
