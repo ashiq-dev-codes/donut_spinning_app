@@ -80,11 +80,18 @@ class _DonutScreenState extends State<DonutScreen> {
                       .clamp(200.0, 300.0);
                   return Column(
                     children: [
-                      // Explicit top clearance in addition to SafeArea, so
-                      // the header clears notches/Dynamic Islands even on
-                      // devices that report a very small top inset.
-                      const SizedBox(height: 16),
-                      DodonutLogoHeader(color: palette.accent),
+                      // Explicit top clearance in addition to the outer
+                      // SafeArea, so the header clears notches/Dynamic
+                      // Islands even on devices that report a very small
+                      // top inset.
+                      SafeArea(
+                        top: true,
+                        bottom: false,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: DodonutLogoHeader(color: palette.accent),
+                        ),
+                      ),
                       Expanded(
                         child: DonutCarousel(
                           controller: _pageController,
