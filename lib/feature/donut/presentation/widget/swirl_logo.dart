@@ -57,11 +57,6 @@ class _SwirlPainter extends CustomPainter {
     final fill = Paint()
       ..color = color
       ..style = PaintingStyle.fill;
-    final stroke = Paint()
-      ..color = Color.lerp(color, Colors.black, 0.55)!.withValues(alpha: 0.9)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = radius * 0.045
-      ..strokeJoin = StrokeJoin.round;
 
     final petal = _petalPath(radius);
 
@@ -69,17 +64,22 @@ class _SwirlPainter extends CustomPainter {
       canvas.save();
       canvas.rotate(i * (2 * math.pi / petalCount));
       canvas.drawPath(petal, fill);
-      canvas.drawPath(petal, stroke);
       canvas.restore();
     }
   }
 
+  // A fan blade that's narrow at the hub and rounded at the outer tip —
+  // not a pointed star spike — rotated around the center this reads as a
+  // spinning pinwheel/vortex, matching the Figma mark. No stroke: the
+  // reference blends petals as solid overlapping fills, not outlined
+  // segments.
   Path _petalPath(double radius) {
-    final tip = -radius * 0.96;
+    final tip = -radius * 0.98;
     return Path()
       ..moveTo(0, 0)
-      ..quadraticBezierTo(radius * 0.58, tip * 0.62, 0, tip)
-      ..quadraticBezierTo(-radius * 0.22, tip * 0.46, 0, 0)
+      ..quadraticBezierTo(radius * 0.78, tip * 0.22, radius * 0.16, tip * 0.94)
+      ..quadraticBezierTo(radius * 0.02, tip * 1.04, -radius * 0.14, tip * 0.9)
+      ..quadraticBezierTo(-radius * 0.05, tip * 0.5, 0, 0)
       ..close();
   }
 
