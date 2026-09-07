@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
 import 'package:donut_spinning_app/feature/donut/presentation/model/donut_flavor.dart';
 import 'package:donut_spinning_app/feature/donut/presentation/widget/animated_flavor_background.dart';
 import 'package:donut_spinning_app/feature/donut/presentation/widget/dodonut_logo_header.dart';
 import 'package:donut_spinning_app/feature/donut/presentation/widget/donut_carousel.dart';
 import 'package:donut_spinning_app/feature/donut/presentation/widget/flavor_info.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class DonutScreen extends StatefulWidget {
   const DonutScreen({super.key});
@@ -34,8 +33,7 @@ class _DonutScreenState extends State<DonutScreen> {
   }
 
   void _handlePageUpdate() {
-    final page =
-        _pageController.page ?? _pageController.initialPage.toDouble();
+    final page = _pageController.page ?? _pageController.initialPage.toDouble();
     _pageNotifier.value = page;
 
     // Clamped, not wrapped — Strawberry Bliss and Pistachio Perfection are
@@ -76,8 +74,10 @@ class _DonutScreenState extends State<DonutScreen> {
             return SafeArea(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final centerDonutSize = (constraints.maxWidth * 0.58)
-                      .clamp(200.0, 300.0);
+                  final centerDonutSize = (constraints.maxWidth * 0.58).clamp(
+                    200.0,
+                    300.0,
+                  );
                   return Column(
                     children: [
                       // Explicit top clearance in addition to the outer
@@ -138,9 +138,7 @@ class _FlavorDetailSheet extends StatelessWidget {
           decoration: BoxDecoration(
             color: flavor.mid,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: flavor.accent.withValues(alpha: 0.25),
-            ),
+            border: Border.all(color: flavor.accent.withValues(alpha: 0.25)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
