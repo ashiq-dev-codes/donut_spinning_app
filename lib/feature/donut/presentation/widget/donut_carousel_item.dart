@@ -48,13 +48,16 @@ class DonutCarouselItem extends StatelessWidget {
   /// line, nowhere near a real arc.
   static const _donutSagCoefficient = 0.02;
 
-  /// How far the plate throws vertically per page of offset, as a
-  /// multiple of [centerDonutSize]. In the reference recording the plate
-  /// is never seen easing gently along with its donut — it's already
-  /// off-screen (top or bottom) well before its donut reaches the
-  /// neighbour position, like a separate object being lifted straight up
-  /// out of frame rather than riding the donut's own arc.
-  static const _plateThrowDistance = 2.2;
+  /// Extra clearance (logical pixels) added past the screen edge when
+  /// computing the plate's vertical throw — just enough margin that a
+  /// settled neighbour's plate is *barely* off-screen at rest, not buried
+  /// deep off-screen. Too little and it peeks into frame before scrolling
+  /// even starts (see the class doc above on `Clip.none`); too much and
+  /// there's a dead zone where a chunk of the scroll goes by before the
+  /// plate has anything to show for it. This plus half the screen height
+  /// and half the plate's own size is the full throw at `|dx| == 1`, so the
+  /// plate crosses back into frame almost as soon as scrolling begins.
+  static const _plateEdgeMargin = 24.0;
 
   /// Radians of donut spin per page of offset — half a turn, a simple,
   /// clearly-visible amount well short of a dizzying full rotation. Tied
@@ -64,9 +67,16 @@ class DonutCarouselItem extends StatelessWidget {
   /// matching the reference where a settled donut always sits upright.
   static const _donutSpinPerPage = math.pi;
 
+  /// How far the plate's horizontal travel reaches toward the screen edge,
+  /// as a fraction of the PageView's own natural corner-to-corner drift
+  /// (`dx * itemExtent`). 1.0 would hug the exact corner; pulling this in
+  /// a little keeps the plate's arrival/exit point short of the edge.
+  static const _plateHorizontalReach = 0.55;
+
   @override
   Widget build(BuildContext context) {
     final dpr = MediaQuery.devicePixelRatioOf(context);
+    final screenHeight = MediaQuery.sizeOf(context).height;
 
     // Signed distance, in pages, between this item and the live scroll
     // position: 0 when dead center, +/-1 when it's the fully settled
@@ -76,26 +86,35 @@ class DonutCarouselItem extends StatelessWidget {
 
     final donutTranslateY = _donutSagCoefficient * dx * dx * itemExtent;
 
+    final plateSize = centerDonutSize * 1.16;
+
     // Linear and signed, not the donut's symmetric quadratic sag: a plate
     // still arriving (positive dx) sits below center and rises up into
     // place; once it's passed (negative dx) it keeps rising up and away,
     // rather than mirroring back down. One continuous upward conveyor.
-    final plateTranslateY = dx * centerDonutSize * _plateThrowDistance;
+    //
+    // The throw at |dx| == 1 is half the screen (center-to-edge) plus half
+    // the plate's own size (so its near edge, not just its center, clears
+    // the screen) plus a small margin — just enough to stay hidden at
+    // rest without a long dead zone before it reappears once scrolling.
+    final plateTranslateY =
+        dx * (screenHeight / 2 + plateSize / 2 + _plateEdgeMargin);
 
     // Horizontally, the plate rides the PageView's own left/right
-    // placement of this item on the way in (dx > 0) — that's what puts an
-    // arriving plate at bottom-*right*. But we don't want it to keep
-    // riding that placement out to the left once the item has passed
-    // (dx < 0): this term exactly cancels the PageView's own shift for
-    // dx < 0 and replaces it with the mirror image, so the plate keeps
-    // exiting toward the right — bottom-right in, top-right out — instead
-    // of trailing off to the top-left with its donut.
-    final plateTranslateX = dx < 0 ? -2 * dx * itemExtent : 0.0;
+    // placement of this item on the way in (dx >= 0), pulled in short of
+    // the exact corner by _plateHorizontalReach — that's what puts an
+    // arriving plate at bottom-right without hugging the very edge. Once
+    // the item has passed (dx < 0) this term cancels the PageView's own
+    // leftward shift and replaces it with that same pulled-in mirror
+    // image, so the plate keeps exiting toward the right at a matching
+    // distance — bottom-right in, top-right out — instead of trailing off
+    // to the top-left with its donut.
+    final plateTranslateX = dx >= 0
+        ? (_plateHorizontalReach - 1) * dx * itemExtent
+        : -dx * itemExtent * (_plateHorizontalReach + 1);
 
     final donutScale = (1.0 - absOffset * 0.62).clamp(0.32, 1.0);
     final donutOpacity = (1.0 - absOffset * 0.35).clamp(0.45, 1.0);
-
-    final plateSize = centerDonutSize * 1.16;
 
     // The donut spins flat around its own center as it's dragged, bound to
     // this item's own signed dx so it always lands back at exactly zero
