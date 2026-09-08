@@ -24,8 +24,6 @@ class _DonutScreenState extends State<DonutScreen> {
     _pageController.initialPage.toDouble(),
   );
 
-  int _currentIndex = 0;
-
   @override
   void initState() {
     super.initState();
@@ -33,15 +31,8 @@ class _DonutScreenState extends State<DonutScreen> {
   }
 
   void _handlePageUpdate() {
-    final page = _pageController.page ?? _pageController.initialPage.toDouble();
-    _pageNotifier.value = page;
-
-    // Clamped, not wrapped — Strawberry Bliss and Pistachio Perfection are
-    // a hard start/end, so an elastic overscroll shouldn't wrap the title.
-    final settledIndex = page.round().clamp(0, _flavors.length - 1);
-    if (settledIndex != _currentIndex) {
-      setState(() => _currentIndex = settledIndex);
-    }
+    _pageNotifier.value =
+        _pageController.page ?? _pageController.initialPage.toDouble();
   }
 
   @override
@@ -107,8 +98,8 @@ class _DonutScreenState extends State<DonutScreen> {
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 440),
                           child: FlavorInfo(
-                            flavor: _flavors[_currentIndex],
-                            activeIndex: _currentIndex,
+                            flavors: _flavors,
+                            page: _pageNotifier,
                           ),
                         ),
                       ),
