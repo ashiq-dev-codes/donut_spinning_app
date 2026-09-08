@@ -89,7 +89,10 @@ class _DonutScreenState extends State<DonutScreen> {
                         bottom: false,
                         child: Padding(
                           padding: const EdgeInsets.only(top: 12),
-                          child: DodonutLogoHeader(color: palette.accent),
+                          child: DodonutLogoHeader(
+                            page: _pageNotifier,
+                            color: palette.accent,
+                          ),
                         ),
                       ),
                       Expanded(

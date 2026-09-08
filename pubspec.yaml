@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_svg: ^2.0.10+1
   cupertino_icons: ^1.0.8
   lucide_icons_flutter: ^3.1.17
 
@@ -25,6 +26,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/svgs/logo/
     - assets/images/plate/
     - assets/images/donuts/
 
