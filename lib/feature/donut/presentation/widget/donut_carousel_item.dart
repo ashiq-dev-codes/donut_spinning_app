@@ -17,8 +17,8 @@ import 'package:flutter/material.dart';
 /// ([_PlateLayer], [_DonutLayer]), each with its own isolated transform
 /// chain. Nothing here ever wraps both layers (or the FAB) in a shared
 /// `Transform.rotate` — that's what previously made the whole card appear
-/// to tilt. The only rotation in this widget is the plate's own spin,
-/// applied to nothing but its `Image.asset`.
+/// to tilt. The only rotation in this widget is the donut's own spin,
+/// applied to nothing but its `Image.asset`; the plate never rotates.
 class DonutCarouselItem extends StatelessWidget {
   const DonutCarouselItem({
     super.key,
@@ -56,11 +56,13 @@ class DonutCarouselItem extends StatelessWidget {
   /// out of frame rather than riding the donut's own arc.
   static const _plateThrowDistance = 2.2;
 
-  /// Radians of plate spin per page of scroll — one full turn per page.
-  /// Driven by the raw [pageOffset], not this item's own [index], so
-  /// every plate on screen shows the same shared dish angle rather than
-  /// each restarting from zero as it cycles into view.
-  static const _plateSpinPerPage = 2 * math.pi;
+  /// Radians of donut spin per page of offset — half a turn, a simple,
+  /// clearly-visible amount well short of a dizzying full rotation. Tied
+  /// to this item's own signed `dx` rather than the raw [pageOffset]: that
+  /// keeps every settled, dead-center donut sitting at exactly zero
+  /// rotation regardless of how many pages have been scrolled overall,
+  /// matching the reference where a settled donut always sits upright.
+  static const _donutSpinPerPage = math.pi;
 
   @override
   Widget build(BuildContext context) {
@@ -93,13 +95,13 @@ class DonutCarouselItem extends StatelessWidget {
     final donutScale = (1.0 - absOffset * 0.62).clamp(0.32, 1.0);
     final donutOpacity = (1.0 - absOffset * 0.35).clamp(0.45, 1.0);
 
-    final plateScale = (1.0 - absOffset * 1.0).clamp(0.15, 1.0);
-    final plateOpacity = (1.0 - absOffset * 1.6).clamp(0.0, 1.0);
     final plateSize = centerDonutSize * 1.16;
 
-    // One shared dish spinning flat under the whole carousel — bound
-    // straight to scroll progress, never a per-item animation.
-    final plateRotationAngle = pageOffset * _plateSpinPerPage;
+    // The donut spins flat around its own center as it's dragged, bound to
+    // this item's own signed dx so it always lands back at exactly zero
+    // once settled dead-center, rather than drifting to some off-kilter
+    // angle depending on how far the carousel has been scrolled overall.
+    final donutRotationAngle = dx * _donutSpinPerPage;
 
     // Holds near-full opacity well past the halfway point, then drops
     // fast right at the end — matching the reference, where the FAB
@@ -112,28 +114,29 @@ class DonutCarouselItem extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // LAYER 1 — plate (background spin). Rotation is applied only
-          // inside _PlateLayer, directly on the plate Image.asset.
-          if (plateOpacity > 0)
-            _PlateLayer(
-              image: AppImages.plate,
-              size: plateSize,
-              translateX: plateTranslateX,
-              translateY: plateTranslateY,
-              scale: plateScale,
-              opacity: plateOpacity,
-              rotationAngle: plateRotationAngle,
-              dpr: dpr,
-            ),
+          // LAYER 1 — plate. Never rotates — a fixed-size, fixed-orientation
+          // object that simply travels into and out of frame, so it "comes
+          // and goes" purely by traveling far enough off-position to leave
+          // the screen — not by easing its opacity, size, or angle (the
+          // PageView itself doesn't clip it; see the class doc above on
+          // `Clip.none`).
+          _PlateLayer(
+            image: AppImages.plate,
+            size: plateSize,
+            translateX: plateTranslateX,
+            translateY: plateTranslateY,
+            dpr: dpr,
+          ),
 
-          // LAYER 2 — donut (foreground image). No Z-axis rotation here
-          // at all — only translate + scale.
+          // LAYER 2 — donut (foreground image). Rotation is applied only
+          // here, directly on the donut Image.asset.
           _DonutLayer(
             image: flavor.image,
             size: centerDonutSize,
             translateY: donutTranslateY,
             scale: donutScale,
             opacity: donutOpacity,
+            rotationAngle: donutRotationAngle,
             dpr: dpr,
           ),
 
@@ -156,14 +159,48 @@ class DonutCarouselItem extends StatelessWidget {
   }
 }
 
-/// LAYER 1 — the plate. Spins continuously around its own center via
-/// [rotationAngle]; the arc sag is a plain [Transform.translate] with no
-/// rotation of its own, so the spin never reads as a 3D tilt.
+/// LAYER 1 — the plate. Deliberately has no [Transform.rotate] anywhere in
+/// its chain: it only ever translates (in and out of frame), so it always
+/// renders at the same fixed orientation regardless of scroll position.
 class _PlateLayer extends StatelessWidget {
   const _PlateLayer({
     required this.image,
     required this.size,
     required this.translateX,
+    required this.translateY,
+    required this.dpr,
+  });
+
+  final String image;
+  final double size;
+  final double translateX;
+  final double translateY;
+  final double dpr;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: Offset(translateX, translateY),
+      child: Image.asset(
+        image,
+        width: size,
+        height: size,
+        cacheWidth: (size * dpr).round(),
+        filterQuality: FilterQuality.medium,
+      ),
+    );
+  }
+}
+
+/// LAYER 2 — the donut. Spins continuously around its own center via
+/// [rotationAngle]; the arc sag is a plain [Transform.translate] with no
+/// rotation of its own, so the spin never reads as a 3D tilt — this is a
+/// flat, top-down turn, layered independently on top of the translate and
+/// scale.
+class _DonutLayer extends StatelessWidget {
+  const _DonutLayer({
+    required this.image,
+    required this.size,
     required this.translateY,
     required this.scale,
     required this.opacity,
@@ -173,7 +210,6 @@ class _PlateLayer extends StatelessWidget {
 
   final String image;
   final double size;
-  final double translateX;
   final double translateY;
   final double scale;
   final double opacity;
@@ -185,7 +221,7 @@ class _PlateLayer extends StatelessWidget {
     return Opacity(
       opacity: opacity,
       child: Transform.translate(
-        offset: Offset(translateX, translateY),
+        offset: Offset(0, translateY),
         child: Transform.scale(
           scale: scale,
           child: Transform.rotate(
@@ -197,47 +233,6 @@ class _PlateLayer extends StatelessWidget {
               cacheWidth: (size * dpr).round(),
               filterQuality: FilterQuality.medium,
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// LAYER 2 — the donut. Deliberately has no [Transform.rotate] anywhere in
-/// its chain: it only ever translates (arc sag) and scales (depth
-/// falloff), so it always renders upright regardless of scroll position.
-class _DonutLayer extends StatelessWidget {
-  const _DonutLayer({
-    required this.image,
-    required this.size,
-    required this.translateY,
-    required this.scale,
-    required this.opacity,
-    required this.dpr,
-  });
-
-  final String image;
-  final double size;
-  final double translateY;
-  final double scale;
-  final double opacity;
-  final double dpr;
-
-  @override
-  Widget build(BuildContext context) {
-    return Opacity(
-      opacity: opacity,
-      child: Transform.translate(
-        offset: Offset(0, translateY),
-        child: Transform.scale(
-          scale: scale,
-          child: Image.asset(
-            image,
-            width: size,
-            height: size,
-            cacheWidth: (size * dpr).round(),
-            filterQuality: FilterQuality.medium,
           ),
         ),
       ),
