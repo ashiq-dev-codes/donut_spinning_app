@@ -58,17 +58,21 @@ class AnimatedFlavorBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // RadialGradient.radius is a fraction of the shortest side. On a
-        // tall phone screen the shortest side is the width, so a radius
-        // tuned for the Figma prototype's wide desktop frame would run out
-        // of reach long before the bottom of the screen — collapsing to a
-        // near-black dead zone behind the flavor description instead of
-        // the rich, still-colorful purple the reference keeps everywhere.
-        // Scaling by the box's own aspect ratio keeps the same relative
-        // falloff regardless of how tall/narrow the viewport is.
+        // The Figma frame is landscape (1440x1024) — its corners and the
+        // area straight down from center are comparably far from the glow,
+        // so a plain circular gradient there already reaches proportionally
+        // far in both directions. Our phone screen is tall and narrow, so
+        // that's no longer true: going straight down to the bottom covers
+        // almost as much distance as the actual (diagonal) corner does.
+        // A plain circle tuned to keep the corners dark ends up fading out
+        // right below the logo, long before it reaches the donut — a plain
+        // circle tuned to reach the donut floods the corners with color.
+        // _EllipticalGradientTransform below squashes the circle into an
+        // ellipse matching the screen's own aspect ratio, so it reaches the
+        // bottom edge and the side corners in the same proportion the
+        // reference's landscape frame does.
         final size = constraints.biggest;
         final aspect = size.height / size.width;
-        final radius = 1.3 * math.max(1.0, aspect * 0.82);
 
         return ValueListenableBuilder<double>(
           valueListenable: page,
@@ -80,10 +84,11 @@ class AnimatedFlavorBackground extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: RadialGradient(
-                        center: const Alignment(0, -0.55),
-                        radius: radius,
+                        center: const Alignment(0, -0.09),
+                        radius: 0.85,
                         colors: [palette.glow, palette.mid, palette.edge],
                         stops: const [0.0, 0.5, 1.0],
+                        transform: _EllipticalGradientTransform(aspect),
                       ),
                     ),
                   ),
@@ -96,6 +101,29 @@ class AnimatedFlavorBackground extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+/// Stretches a [RadialGradient]'s circle into an ellipse matching the
+/// paint box's own aspect ratio, scaling around the box's center. Without
+/// this, [RadialGradient.radius] (a fraction of the shorter side) makes a
+/// gradient that reaches equally far in every direction — fine for a
+/// roughly-square box, but on a tall phone screen that means either the
+/// glow stays trapped near the top or it floods all the way out to the
+/// side corners. See the call site for the full reasoning.
+class _EllipticalGradientTransform extends GradientTransform {
+  const _EllipticalGradientTransform(this.aspect);
+
+  /// Height / width of the box the gradient is painted into.
+  final double aspect;
+
+  @override
+  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
+    final center = bounds.center;
+    return Matrix4.identity()
+      ..translateByDouble(center.dx, center.dy, 0, 1)
+      ..scaleByDouble(1.0, aspect, 1.0, 1)
+      ..translateByDouble(-center.dx, -center.dy, 0, 1);
   }
 }
 

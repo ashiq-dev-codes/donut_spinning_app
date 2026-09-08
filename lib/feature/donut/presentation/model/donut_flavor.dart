@@ -3,8 +3,12 @@ import 'package:donut_spinning_app/shared/path/app_images.dart';
 
 /// Static content + palette for a single donut flavor shown in the carousel.
 ///
-/// Colors were sampled directly from the Figma prototype recording so the
-/// glow/vignette and accent hues match each flavor's donut.
+/// [glow], [edge], and [accent] were sampled directly from the Figma source
+/// file (background frame fill = [edge]; the frame's own "glow" shape fill
+/// = [glow]; the flavor name/description text color = [accent]). Figma only
+/// exposes those two ends of the wash as distinct swatches — there's no
+/// separate third color for our gradient's middle stop — so [mid] is a
+/// straight blend between [edge] and [glow] rather than a sampled value.
 class DonutFlavor {
   const DonutFlavor({
     required this.name,
@@ -36,10 +40,10 @@ class DonutFlavor {
           'icing, crowned with real strawberry pieces — a blissful symphony '
           'of sweetness and freshness in every bite.',
       image: AppImages.donut1,
-      glow: Color(0xFF6B1512),
-      mid: Color(0xFF2A0A08),
-      edge: Color(0xFF0D0403),
-      accent: Color(0xFFFF7A7D),
+      glow: Color(0xFFA71B1B),
+      mid: Color(0xFF591515),
+      edge: Color(0xFF1F0500),
+      accent: Color(0xFFFF8B8B),
     ),
     DonutFlavor(
       name: 'Banana Dream',
@@ -48,10 +52,10 @@ class DonutFlavor {
           'donut is coated in a rich banana glaze, adorned with banana chips '
           'for a crispy finish, delivering a dreamy fusion of flavors.',
       image: AppImages.donut2,
-      glow: Color(0xFFB35701),
-      mid: Color(0xFF7D2F00),
-      edge: Color(0xFF1C0D00),
-      accent: Color(0xFFFFE14D),
+      glow: Color(0xFFFF9C01),
+      mid: Color(0xFFBF6500),
+      edge: Color(0xFF7F2E00),
+      accent: Color(0xFFFFED50),
     ),
     DonutFlavor(
       name: 'Blueberry Burst',
@@ -60,10 +64,10 @@ class DonutFlavor {
           'creation with its blueberry glaze and plump blueberries on top, '
           'ensuring a burst of fruity goodness in each indulgent mouthful.',
       image: AppImages.donut3,
-      glow: Color(0xFF8C337A),
-      mid: Color(0xFF4E2A69),
-      edge: Color(0xFF1A0F24),
-      accent: Color(0xFFEEA8FF),
+      glow: Color(0xFFEA4E9F),
+      mid: Color(0xFF9B3E88),
+      edge: Color(0xFF4B2D71),
+      accent: Color(0xFFF4B0FF),
     ),
     DonutFlavor(
       name: 'Choco Delight',
@@ -72,10 +76,10 @@ class DonutFlavor {
           'complements its moist interior for an irresistibly rich treat, '
           'perfect for chocolate enthusiasts.',
       image: AppImages.donut4,
-      glow: Color(0xFF5A2A15),
-      mid: Color(0xFF28120B),
-      edge: Color(0xFF0F0805),
-      accent: Color(0xFFFDC795),
+      glow: Color(0xFFAC5723),
+      mid: Color(0xFF683217),
+      edge: Color(0xFF230D0A),
+      accent: Color(0xFFFFCEA0),
     ),
     DonutFlavor(
       name: 'Pistachio Perfection',
@@ -84,10 +88,10 @@ class DonutFlavor {
           'blend of nutty sweetness in its glaze and crushed pistachio '
           'topping, ensuring an elegant and flavorful experience.',
       image: AppImages.donut5,
-      glow: Color(0xFF535527),
-      mid: Color(0xFF262511),
-      edge: Color(0xFF0D0C05),
-      accent: Color(0xFFF9FDB6),
+      glow: Color(0xFF9EA550),
+      mid: Color(0xFF60622E),
+      edge: Color(0xFF211F0B),
+      accent: Color(0xFFFAFFBD),
     ),
   ];
 }
