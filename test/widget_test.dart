@@ -1,29 +1,22 @@
-// This is a basic Flutter widget test.
+// Basic smoke test for the donut carousel screen.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Note: the carousel drives a repeating autoplay Timer and a continuously
+// spinning logo AnimationController, so this deliberately avoids
+// `pumpAndSettle` (which pumps until no frame is scheduled and would hang
+// forever against a repeating animation) in favor of bounded `pump()` calls.
 
 import 'package:donut_spinning_app/root.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Donut carousel opens on the first flavor', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.text('dodonut'), findsOneWidget);
+    expect(find.text('Strawberry Bliss'), findsOneWidget);
   });
 }
